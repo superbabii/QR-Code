@@ -10,12 +10,14 @@ import {
 } from '@material-ui/core';
 import QRCode from 'qrcode';
 import QrScanner from 'qr-scanner';
+import { QrReader } from 'react-qr-reader';
 
 function App() {
   const [text, setText] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [file, setFile] = useState(null);
   const [data, setData] = useState(null);
+  const [scanResultWebCam, setScanResultWebCam] = useState('');
   const classes = useStyles();
   const fileRef = useRef(null);
 
@@ -33,18 +35,33 @@ function App() {
   };
 
   const handleChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFile(file);
-      const result = await QrScanner.scanImage(file);
-      setData(result);
+    try {
+      const file = e.target.files[0];
+      if (file) {
+        setFile(file);
+        const result = await QrScanner.scanImage(file);
+        setData(result);
+      }
+    } catch (error) {
+      console.error('Error scanning QR code:', error);
+      // Handle the error gracefully, for example, by displaying a message to the user.
     }
   };
+
+  const handleErrorWebCam = (error) => {
+    console.log(error);
+  }
+
+  const handleScanWebCam  = (result) => {
+    if (result) {
+      setScanResultWebCam(result);
+    }
+  }
 
   return (
     <Container className={classes.container}>
       <Card>
-        <h2 className={classes.title}>Generate Download & Scan QR Code with React js</h2>
+        <h2 className={classes.title}>QR Code Starter Kit with React.js</h2>
         <CardContent>
           <Grid container spacing={2}>
             <Grid item xl={4} lg={4} md={6} sm={12} xs={12}>
@@ -55,7 +72,7 @@ function App() {
               <br />
               {imageUrl ? (
                 <a href={imageUrl} download>
-                  <img src={imageUrl} alt="img" />
+                  <img src={imageUrl} alt="QR Code" />
                 </a>
               ) : null}
             </Grid>
@@ -72,7 +89,16 @@ function App() {
               />
               {data && <h3>Scanned Code: {data}</h3>}
             </Grid>
-            <Grid item xl={4} lg={4} md={6} sm={12} xs={12}></Grid>
+            <Grid item xl={4} lg={4} md={6} sm={12} xs={12}>
+              <h3>QR Code Scan by Web Cam</h3>
+              <QrReader
+                delay={300}
+                style={{ width: '100%' }}
+                onError={handleErrorWebCam}
+                onScan={handleScanWebCam}
+              />
+              <h3>Scanned By WebCam Code: {scanResultWebCam}</h3>
+            </Grid>
           </Grid>
         </CardContent>
       </Card>
