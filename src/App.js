@@ -7,6 +7,7 @@ import {
   Grid,
   TextField,
   Button,
+  Snackbar,
 } from '@material-ui/core';
 import QRCode from 'qrcode';
 import QrScanner from 'qr-scanner';
@@ -18,6 +19,7 @@ function App() {
   const [file, setFile] = useState(null);
   const [data, setData] = useState(null);
   const [scanResultWebCam, setScanResultWebCam] = useState('');
+  const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: '' });
   const classes = useStyles();
   const fileRef = useRef(null);
 
@@ -26,6 +28,7 @@ function App() {
       const response = await QRCode.toDataURL(text);
       setImageUrl(response);
     } catch (error) {
+      handleSnackbarOpen('Error scanning QR code');
       console.error('Error generating QR code:', error);
     }
   };
@@ -43,20 +46,29 @@ function App() {
         setData(result);
       }
     } catch (error) {
+      handleSnackbarOpen('Error scanning QR code');
       console.error('Error scanning QR code:', error);
-      // Handle the error gracefully, for example, by displaying a message to the user.
     }
   };
 
   const handleErrorWebCam = (error) => {
+    handleSnackbarOpen('Error with Webcam: ' + error);
     console.log(error);
   }
 
-  const handleScanWebCam  = (result) => {
+  const handleScanWebCam = (result) => {
     if (result) {
       setScanResultWebCam(result);
     }
   }
+
+  const handleSnackbarOpen = (message) => {
+    setErrorSnackbar({ open: true, message });
+  };
+
+  const handleSnackbarClose = () => {
+    setErrorSnackbar({ ...errorSnackbar, open: false });
+  };
 
   return (
     <Container className={classes.container}>
@@ -102,6 +114,13 @@ function App() {
           </Grid>
         </CardContent>
       </Card>
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        open={errorSnackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={errorSnackbar.message}
+      />
     </Container>
   );
 }
